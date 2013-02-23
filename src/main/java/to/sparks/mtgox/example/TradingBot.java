@@ -26,6 +26,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import to.sparks.mtgox.MtGoxHTTPClient;
 import to.sparks.mtgox.event.StreamEvent;
@@ -60,12 +61,12 @@ public class TradingBot implements ApplicationListener<StreamEvent> {
     /* The percentage of price that an order is allowed to deviate before re-ordering
      * at the newly calculated prices */
     static final BigDecimal percentAllowedPriceDeviation = BigDecimal.valueOf(0.0015D);
-    private ThreadPoolTaskExecutor taskExecutor;
+    private SimpleAsyncTaskExecutor taskExecutor;
     private MtGoxHTTPClient mtgoxAPI;
     private CurrencyInfo baseCurrency;
     private Ticker lastTicker;
 
-    public TradingBot(ThreadPoolTaskExecutor taskExecutor, MtGoxHTTPClient mtgoxAPI) throws Exception {
+    public TradingBot(SimpleAsyncTaskExecutor taskExecutor, MtGoxHTTPClient mtgoxAPI) throws Exception {
         this.mtgoxAPI = mtgoxAPI;
         this.taskExecutor = taskExecutor;
 
@@ -173,11 +174,7 @@ public class TradingBot implements ApplicationListener<StreamEvent> {
 
                     if (trade.getAmount().compareTo(new MtGoxBitcoin(0.9D)) > 0) {
                         logger.log(Level.INFO, "Market-making trade event: {0}${1} volume: {2}", new Object[]{trade.getPrice_currency(), trade.getPrice().toPlainString(), trade.getAmount().toPlainString()});
-                        if (taskExecutor.getActiveCount() < 1) {
-                            taskExecutor.execute(new Logic());
-                        } else {
-                            logger.warning("TaskExecuter is busy! Skipping a turn...");
-                        }
+                        taskExecutor.execute(new Logic());
                     } else {
                         logger.log(Level.FINE, "Insufficient sized trade event: {0}${1} volume: {2}", new Object[]{trade.getPrice_currency(), trade.getPrice().toPlainString(), trade.getAmount().toPlainString()});
                     }

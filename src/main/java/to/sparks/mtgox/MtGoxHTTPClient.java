@@ -44,6 +44,10 @@ public interface MtGoxHTTPClient {
      */
     FullDepth getFullDepth() throws Exception;
 
+    FullDepth getDepth() throws Exception;
+
+    Trade[] getTrades(String since) throws Exception;
+    
     /**
      * A private function that requires credentials. Get all open orders.
      *

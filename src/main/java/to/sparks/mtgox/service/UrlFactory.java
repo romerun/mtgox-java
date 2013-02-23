@@ -32,6 +32,8 @@ class UrlFactory {
         PrivateOrders,
         PrivateInfo,
         FullDepth,
+        Depth,
+        Trades,
         Ticker,
         CurrencyInfo,
         PrivateOrderCancel,
@@ -57,6 +59,8 @@ class UrlFactory {
         apiV1RestMap.put(RestCommand.PrivateOrders, "private/orders");
         apiV1RestMap.put(RestCommand.PrivateInfo, "private/info");
         apiV1RestMap.put(RestCommand.FullDepth, "fulldepth");
+        apiV1RestMap.put(RestCommand.Depth, "depth");
+        apiV1RestMap.put(RestCommand.Trades, "trades");
         apiV1RestMap.put(RestCommand.Ticker, "ticker");
         apiV1RestMap.put(RestCommand.CurrencyInfo, "currency");
         apiV1RestMap.put(RestCommand.SendBitcoins, "bitcoin/send_simple");

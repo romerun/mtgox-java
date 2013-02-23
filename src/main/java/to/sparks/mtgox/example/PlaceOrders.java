@@ -51,7 +51,9 @@ public class PlaceOrders {
         String orderRef = mtgoxUSD.placeOrder(MtGoxHTTPClient.OrderType.Bid, fiatUnit, bitcoinUnit);
         logger.log(Level.INFO, "orderRef: {0}", new Object[]{orderRef});
 
+        System.out.print("yo\n");
         // Cancel the order
         mtgoxUSD.cancelOrder(MtGoxHTTPClient.OrderType.Bid, orderRef);
+        System.out.print("yoyo\n");
     }
 }

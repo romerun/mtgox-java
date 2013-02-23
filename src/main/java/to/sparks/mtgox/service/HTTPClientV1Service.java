@@ -27,89 +27,112 @@ import to.sparks.mtgox.net.JSONSource;
 
 /**
  * A simple implementation of a client for the MtGox HTTP API version 1.
- *
+ * 
  * @author SparksG
  */
 class HTTPClientV1Service extends HTTPAuthenticator {
 
-    private JSONSource<Result<AccountInfo>> privateInfoJSON;
-    private JSONSource<Result<Order[]>> openOrdersJSON;
-    private JSONSource<Result<String>> stringJSON;
-    private JSONSource<Result<OrderResult>> orderResultJSON;
-    private JSONSource<Result<FullDepth>> fullDepthJSON;
-    private JSONSource<Result<Ticker>> tickerJSON;
-    private JSONSource<Result<CurrencyInfo>> currencyInfoJSON;
-    private JSONSource<Result<SendBitcoinsTransaction>> sendBitcoinsJSON;
+  private JSONSource<Result<AccountInfo>> privateInfoJSON;
+  private JSONSource<Result<Order[]>> openOrdersJSON;
+  private JSONSource<Result<String>> stringJSON;
+  private JSONSource<Result<OrderResult>> orderResultJSON;
+  private JSONSource<Result<FullDepth>> fullDepthJSON;
+  private JSONSource<Result<Trade[]>> tradesJSON;
+  private JSONSource<Result<Ticker>> tickerJSON;
+  private JSONSource<Result<CurrencyInfo>> currencyInfoJSON;
+  private JSONSource<Result<SendBitcoinsTransaction>> sendBitcoinsJSON;
 
-    public HTTPClientV1Service(final Logger logger, String apiKey, String secret) {
-        super(logger, apiKey, secret);
-        openOrdersJSON = new JSONSource<>();
-        stringJSON = new JSONSource<>();
-        orderResultJSON = new JSONSource<>();
-        fullDepthJSON = new JSONSource<>();
-        tickerJSON = new JSONSource<>();
-        privateInfoJSON = new JSONSource<>();
-        currencyInfoJSON = new JSONSource<>();
-        sendBitcoinsJSON = new JSONSource<>();
+  public HTTPClientV1Service(final Logger logger, String apiKey, String secret) {
+    super(logger, apiKey, secret);
+    openOrdersJSON = new JSONSource<>();
+    stringJSON = new JSONSource<>();
+    orderResultJSON = new JSONSource<>();
+    fullDepthJSON = new JSONSource<>();
+    tradesJSON = new JSONSource<>();
+    tickerJSON = new JSONSource<>();
+    privateInfoJSON = new JSONSource<>();
+    currencyInfoJSON = new JSONSource<>();
+    sendBitcoinsJSON = new JSONSource<>();
+  }
+
+  public Trade[] getTrades(Currency currency, String since) throws Exception {
+    HashMap<String, String> params = new HashMap<>();
+    params.put("since", since);
+    String url = UrlFactory.getUrlForRestCommand(currency, UrlFactory.RestCommand.Trades);
+    System.out.println(url);
+    Result<Trade[]> trades = tradesJSON.getResultFromStream(getMtGoxHTTPInputStream(url, params), Trade[].class);
+    return trades.getReturn();
+  }
+
+  public FullDepth getDepth(Currency currency) throws Exception {
+    FullDepth fullDepth = fullDepthJSON.getResultFromStream(new URL(UrlFactory.getUrlForRestCommand(currency, UrlFactory.RestCommand.Depth)).openStream(), FullDepth.class).getReturn();
+    return fullDepth;
+  }
+
+  public FullDepth getFullDepth(Currency currency) throws Exception {
+    FullDepth fullDepth = fullDepthJSON.getResultFromStream(new URL(UrlFactory.getUrlForRestCommand(currency, UrlFactory.RestCommand.FullDepth)).openStream(), FullDepth.class).getReturn();
+    return fullDepth;
+  }
+
+  public String placeOrder(Currency currency, HashMap<String, String> params)
+      throws Exception {
+    Result<String> result = stringJSON.getResultFromStream(getMtGoxHTTPInputStream(UrlFactory.getUrlForRestCommand(currency, UrlFactory.RestCommand.PrivateOrderAdd), params), String.class);
+    if (result.getError() != null) {
+      throw new RuntimeException(result.getToken() + ": " + result.getError());
     }
+    return result.getReturn();
+  }
 
-    public FullDepth getFullDepth(Currency currency) throws Exception {
-        FullDepth fullDepth = fullDepthJSON.getResultFromStream(new URL(UrlFactory.getUrlForRestCommand(currency, UrlFactory.RestCommand.FullDepth)).openStream(), FullDepth.class).getReturn();
-        return fullDepth;
+  public OrderResult getPrivateOrderResult(HashMap<String, String> params)
+      throws Exception {
+    Result<OrderResult> result = orderResultJSON.getResultFromStream(getMtGoxHTTPInputStream(UrlFactory.getUrlForRestCommand("", UrlFactory.RestCommand.PrivateOrderResult), params), OrderResult.class);
+    if (result.getError() != null) {
+      throw new RuntimeException(result.getToken() + ": " + result.getError());
     }
+    return result.getReturn();
+  }
 
-    public String placeOrder(Currency currency, HashMap<String, String> params) throws Exception {
-        Result<String> result = stringJSON.getResultFromStream(getMtGoxHTTPInputStream(UrlFactory.getUrlForRestCommand(currency, UrlFactory.RestCommand.PrivateOrderAdd), params), String.class);
-        if (result.getError() != null) {
-            throw new RuntimeException(result.getToken() + ": " + result.getError());
-        }
-        return result.getReturn();
+  public Order[] getOpenOrders() throws IOException, NoSuchAlgorithmException,
+      InvalidKeyException, Exception {
+
+    Result<Order[]> openOrders = openOrdersJSON.getResultFromStream(getMtGoxHTTPInputStream(UrlFactory.getUrlForRestCommand("", UrlFactory.RestCommand.PrivateOrders)), Order[].class);
+    return openOrders.getReturn();
+  }
+
+  public AccountInfo getPrivateInfo() throws IOException,
+      NoSuchAlgorithmException, InvalidKeyException, Exception {
+
+    Result<AccountInfo> privateInfo = privateInfoJSON.getResultFromStream(getMtGoxHTTPInputStream(UrlFactory.getUrlForRestCommand("", UrlFactory.RestCommand.PrivateInfo)), AccountInfo.class);
+    return privateInfo.getReturn();
+  }
+
+  public Ticker getTicker(Currency currency) throws IOException, Exception {
+    Result<Ticker> tickerUSD = tickerJSON.getResultFromStream(getMtGoxHTTPInputStream(UrlFactory.getUrlForRestCommand(currency, UrlFactory.RestCommand.Ticker)), Ticker.class);
+    return tickerUSD.getReturn();
+  }
+
+  public CurrencyInfo getCurrencyInfo(Currency currency) throws IOException,
+      Exception {
+    return getCurrencyInfo(currency.getCurrencyCode());
+  }
+
+  public CurrencyInfo getCurrencyInfo(String currencyCode) throws IOException,
+      Exception {
+    HashMap<String, String> params = new HashMap<>();
+    params.put("currency", currencyCode);
+    Result<CurrencyInfo> currencyInfo = currencyInfoJSON.getResultFromStream(getMtGoxHTTPInputStream(UrlFactory.getUrlForRestCommand(currencyCode, UrlFactory.RestCommand.CurrencyInfo), params), CurrencyInfo.class);
+    if (currencyInfo.getError() != null) {
+      throw new RuntimeException(currencyInfo.getToken() + ": " + currencyInfo.getError());
     }
+    return currencyInfo.getReturn();
+  }
 
-    public OrderResult getPrivateOrderResult(HashMap<String, String> params) throws Exception {
-        Result<OrderResult> result = orderResultJSON.getResultFromStream(getMtGoxHTTPInputStream(UrlFactory.getUrlForRestCommand("", UrlFactory.RestCommand.PrivateOrderResult), params), OrderResult.class);
-        if (result.getError() != null) {
-            throw new RuntimeException(result.getToken() + ": " + result.getError());
-        }
-        return result.getReturn();
+  public SendBitcoinsTransaction sendBitcoins(HashMap<String, String> params)
+      throws IOException, Exception {
+    Result<SendBitcoinsTransaction> response = sendBitcoinsJSON.getResultFromStream(getMtGoxHTTPInputStream(UrlFactory.getUrlForRestCommand(UrlFactory.RestCommand.SendBitcoins), params), SendBitcoinsTransaction.class);
+    if (response.getError() != null) {
+      throw new RuntimeException(response.getToken() + ": " + response.getError());
     }
-
-    public Order[] getOpenOrders() throws IOException, NoSuchAlgorithmException, InvalidKeyException, Exception {
-
-        Result<Order[]> openOrders = openOrdersJSON.getResultFromStream(getMtGoxHTTPInputStream(UrlFactory.getUrlForRestCommand("", UrlFactory.RestCommand.PrivateOrders)), Order[].class);
-        return openOrders.getReturn();
-    }
-
-    public AccountInfo getPrivateInfo() throws IOException, NoSuchAlgorithmException, InvalidKeyException, Exception {
-
-        Result<AccountInfo> privateInfo = privateInfoJSON.getResultFromStream(getMtGoxHTTPInputStream(UrlFactory.getUrlForRestCommand("", UrlFactory.RestCommand.PrivateInfo)), AccountInfo.class);
-        return privateInfo.getReturn();
-    }
-
-    public Ticker getTicker(Currency currency) throws IOException, Exception {
-        Result<Ticker> tickerUSD = tickerJSON.getResultFromStream(getMtGoxHTTPInputStream(UrlFactory.getUrlForRestCommand(currency, UrlFactory.RestCommand.Ticker)), Ticker.class);
-        return tickerUSD.getReturn();
-    }
-
-    public CurrencyInfo getCurrencyInfo(Currency currency) throws IOException, Exception {
-        return getCurrencyInfo(currency.getCurrencyCode());
-    }
-
-    public CurrencyInfo getCurrencyInfo(String currencyCode) throws IOException, Exception {
-        HashMap<String, String> params = new HashMap<>();
-        params.put("currency", currencyCode);
-        Result<CurrencyInfo> currencyInfo = currencyInfoJSON.getResultFromStream(getMtGoxHTTPInputStream(UrlFactory.getUrlForRestCommand(currencyCode, UrlFactory.RestCommand.CurrencyInfo), params), CurrencyInfo.class);
-        if (currencyInfo.getError() != null) {
-            throw new RuntimeException(currencyInfo.getToken() + ": " + currencyInfo.getError());
-        }
-        return currencyInfo.getReturn();
-    }
-
-    public SendBitcoinsTransaction sendBitcoins(HashMap<String, String> params) throws IOException, Exception {
-        Result<SendBitcoinsTransaction> response = sendBitcoinsJSON.getResultFromStream(getMtGoxHTTPInputStream(UrlFactory.getUrlForRestCommand(UrlFactory.RestCommand.SendBitcoins), params), SendBitcoinsTransaction.class);
-        if (response.getError() != null) {
-            throw new RuntimeException(response.getToken() + ": " + response.getError());
-        }
-        return response.getReturn();
-    }
+    return response.getReturn();
+  }
 }

@@ -52,7 +52,6 @@ public class WebsocketExamples implements ApplicationListener<StreamEvent> {
         if (event instanceof DepthEvent) {
             Depth depth = (Depth) event.getPayload();
             logger.log(Level.INFO, "Depth: {0}", new Object[]{depth.getTotalVolume().toPlainString()});
-
         } else if (event instanceof TickerEvent) {
             Ticker ticker = (Ticker) event.getPayload();
             logger.log(Level.INFO, "Last: {0}", new Object[]{ticker.getLast().toPlainString()});

@@ -15,45 +15,66 @@
 package to.sparks.mtgox.example;
 
 import java.util.logging.Level;
+
 import java.util.logging.Logger;
 import org.apache.commons.lang.ArrayUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import to.sparks.mtgox.MtGoxHTTPClient;
 import to.sparks.mtgox.model.AccountInfo;
+import to.sparks.mtgox.model.FullDepth;
+import to.sparks.mtgox.model.Offer;
 import to.sparks.mtgox.model.Order;
 import to.sparks.mtgox.model.Ticker;
+import to.sparks.mtgox.model.Trade;
 
 /**
  * This example will show how to get some types of information from MtGox
- *
+ * 
  * @author SparksG
  */
 public class HowToGetInfo {
 
-    static final Logger logger = Logger.getLogger(HowToGetInfo.class.getName());
+  static final Logger logger = Logger.getLogger(HowToGetInfo.class.getName());
 
-    public static void main(String[] args) throws Exception {
+  public static void main(String[] args) throws Exception {
 
-        // Obtain a $USD instance of the API
-        ApplicationContext context = new ClassPathXmlApplicationContext("to/sparks/mtgox/example/Beans.xml");
-        MtGoxHTTPClient mtgoxUSD = (MtGoxHTTPClient) context.getBean("mtgoxUSD");
+    // Obtain a $USD instance of the API
+    ApplicationContext context = new ClassPathXmlApplicationContext("to/sparks/mtgox/example/Beans.xml");
+    MtGoxHTTPClient mtgoxUSD = (MtGoxHTTPClient) context.getBean("mtgoxUSD");
 
-        Ticker ticker = mtgoxUSD.getTicker();
-        logger.log(Level.INFO, "Last price: {0}", ticker.getLast().toPlainString());
+    FullDepth depths = mtgoxUSD.getDepth();
+    Offer[] asks = depths.getAsks();
+    Offer[] bids = depths.getBids();
 
-        // Get the private account info
-        AccountInfo info = mtgoxUSD.getAccountInfo();
-        logger.log(Level.INFO, "Logged into account: {0}", info.getLogin());
-
-        Order[] openOrders = mtgoxUSD.getOpenOrders();
-
-        if (ArrayUtils.isNotEmpty(openOrders)) {
-            for (Order order : openOrders) {
-                logger.log(Level.INFO, "Open order: {0} status: {1} price: {2}{3} amount: {4}", new Object[]{order.getOid(), order.getStatus(), order.getCurrency().getCurrencyCode(), order.getPrice().getDisplay(), order.getAmount().getDisplay()});
-            }
-        } else {
-            logger.info("There are no currently open bid or ask orders.");
-        }
+    Trade[] trades = mtgoxUSD.getTrades("0");
+    for (Trade trade : trades) {
+      System.out.println("Trade " + trade.getPrice().doubleValue() + " " + trade.getPrice_currency() + ":" + trade.getAmount().doubleValue() + " " + trade.getTrade_type() + "/" + trade.getDate() + ":" + trade.getTradeId() + ":" + trade.getProperties());
     }
+    
+/*    for (int i = 0; i < bids.length; ++i) {
+      System.out.println("Bid " + bids[i].getPrice().doubleValue() + ":" + bids[i].getAmount().doubleValue());
+    }
+
+    for (int i = 0; i < asks.length; ++i) {
+      System.out.println("Asks " + asks[i].getPrice().doubleValue() + ":" + asks[i].getAmount().doubleValue());
+    }*/
+
+    Ticker ticker = mtgoxUSD.getTicker();
+    logger.log(Level.INFO, "Last price: {0}", ticker.getLast().toPlainString());
+
+    // Get the private account info
+    AccountInfo info = mtgoxUSD.getAccountInfo();
+    logger.log(Level.INFO, "Logged into account: {0}", info.getLogin());
+
+    Order[] openOrders = mtgoxUSD.getOpenOrders();
+
+    if (ArrayUtils.isNotEmpty(openOrders)) {
+      for (Order order : openOrders) {
+        logger.log(Level.INFO, "Open order: {0} status: {1} price: {2}{3} amount: {4}", new Object[] { order.getOid(), order.getStatus(), order.getCurrency().getCurrencyCode(), order.getPrice().getDisplay(), order.getAmount().getDisplay() });
+      }
+    } else {
+      logger.info("There are no currently open bid or ask orders.");
+    }
+  }
 }
