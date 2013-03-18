@@ -49,6 +49,7 @@ public class PlaceOrders {
         MtGoxFiatCurrency fiatUnit = new MtGoxFiatCurrency(0.01D, currencyInfo);  // We use the currencyInfo to be explicit about what this money represents
         MtGoxBitcoin bitcoinUnit = new MtGoxBitcoin(1.0D);  // You should probably use BigDecimals instead of double types to represent money.
         String orderRef = mtgoxUSD.placeOrder(MtGoxHTTPClient.OrderType.Bid, fiatUnit, bitcoinUnit);
+        
         logger.log(Level.INFO, "orderRef: {0}", new Object[]{orderRef});
 
         System.out.print("yo\n");

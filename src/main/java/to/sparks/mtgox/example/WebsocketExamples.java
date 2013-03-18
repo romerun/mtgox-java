@@ -58,6 +58,7 @@ public class WebsocketExamples implements ApplicationListener<StreamEvent> {
         } else if (event instanceof TradeEvent) {
             Trade trade = (Trade) event.getPayload();
             logger.log(Level.INFO, "Trade: {0} {1}", new Object[]{trade.getPrice_currency(), trade.getPrice().toPlainString()});
+            System.err.println(trade.toString());
         }
     }
 }

@@ -59,7 +59,6 @@ class HTTPClientV1Service extends HTTPAuthenticator {
     HashMap<String, String> params = new HashMap<>();
     params.put("since", since);
     String url = UrlFactory.getUrlForRestCommand(currency, UrlFactory.RestCommand.Trades);
-    System.out.println(url);
     Result<Trade[]> trades = tradesJSON.getResultFromStream(getMtGoxHTTPInputStream(url, params), Trade[].class);
     return trades.getReturn();
   }

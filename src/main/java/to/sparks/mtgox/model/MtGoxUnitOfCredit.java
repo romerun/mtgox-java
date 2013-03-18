@@ -123,9 +123,13 @@ public abstract class MtGoxUnitOfCredit implements Comparable<BigDecimal> {
     }
 
     public String toPlainString() {
-        return numUnits.toPlainString();
+      return numUnits.toPlainString();
     }
 
+    public double saneDoubleValue() {
+      return Double.parseDouble(toPlainString());
+    }
+    
     public boolean equals(MtGoxUnitOfCredit target) {
         if (isCurrenciesEquivalent(target)) {
             return equals(target.getNumUnits());

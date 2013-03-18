@@ -4,6 +4,7 @@ import java.util.Currency;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import to.sparks.mtgox.MtGoxHTTPClient;
+import to.sparks.mtgox.MtGoxHTTPClient.OrderType;
 
 /**
  *
@@ -25,6 +26,18 @@ public class Order extends DtoBase implements CurrencyKludge {
     private DynaBean[] actions;
     private TickerPrice invalid_amount;
 
+    public static String toString(TickerPrice t) {
+      if (t == null) {
+        return "null";
+      } else {
+        return t.getDisplay();
+      }
+    }
+    
+    public String toString() {
+      return String.format("%s - %s/%s/%s - %s - %s(%s/%s)(%s) - %s, %s", date, oid, currency, item, (type == OrderType.Bid ? "BID" : "ASK"), toString(price), toString(amount), toString(effective_amount), toString(invalid_amount), status, priority);
+    }
+    
     public Order(@JsonProperty("oid") String oid,
             @JsonProperty("currency") String currency,
             @JsonProperty("item") String item,

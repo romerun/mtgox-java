@@ -1,5 +1,8 @@
 package to.sparks.mtgox.model;
 
+import java.text.Format;
+import java.util.Formatter;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -22,14 +25,19 @@ public class Trade extends DtoBase implements IEventTime, CurrencyKludge {
   private CurrencyInfo currencyInfo = null;
   private String price_currency;
 
-  public Trade(@JsonProperty("tid") String tid,
+  public String toString () {
+    return (tid + "\t" + trade_type + "\t" + primary + "\t" + item + "\t" + price_currency + "\t" + properties + "\t" + price_int + "\t" + amount_int); 
+  }
+  
+  public Trade(
+      @JsonProperty("tid") String tid,
+      @JsonProperty("trade_type") String trade_type,
       @JsonProperty("primary") String primary,
       @JsonProperty("price_currency") String price_currency,
       @JsonProperty("type") String type,
       @JsonProperty("properties") String properties,
       @JsonProperty("item") String item, @JsonProperty("amount") double amount,
       @JsonProperty("price") double price,
-      @JsonProperty("trade_type") String trade_type,
       @JsonProperty("date") long date,
       @JsonProperty("amount_int") long amount_int,
       @JsonProperty("price_int") long price_int) {

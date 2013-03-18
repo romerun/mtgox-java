@@ -102,6 +102,7 @@ public class HTTPAuthenticator {
         connection.setConnectTimeout(connectTimeout);
         connection.setReadTimeout(readTimout);
         connection.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; mtgox-java client)");
+        
         new Thread(new InterruptThread(Thread.currentThread(), connection)).start(); // Kill the connection on timeout
 
         if (StringUtils.isNotBlank(this.secret) && !this.secret.equalsIgnoreCase("${api.secret}")) {
